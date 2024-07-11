@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  terraform:
+    image: hashicorp/terraform:1.8
+    container_name: terraform
+    volumes:
+      - ./terraform:/workspace
+      - ./modules:/modules
+    working_dir: /workspace
+    env_file: ".env"

@@ -1,0 +1,36 @@
+{
+  "Comment": "This orchestrates tasks to process JSON files from a 'Raw' layer to a 'Bronze' layer using AWS Glue jobs",
+  "StartAt": "Bronze Table List",
+  "States": {
+    "Bronze Table List": {
+      "Type": "Pass",
+      "Next": "Map",
+      "Result": ${table_list}
+    },
+    "Map": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "Raw To Bronze",
+        "States": {
+          "Raw To Bronze": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+              "JobName": "1_raw_to_bronze",
+              "Arguments": {
+                "--SCHEMA.$": "$.schema",
+                "--TABLE_NAME.$": "$.table_name"
+              }
+            },
+            "End": true
+          }
+        }
+      },
+      "End": true,
+      "MaxConcurrency": 40
+    }
+  }
+}

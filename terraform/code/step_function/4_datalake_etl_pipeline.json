@@ -1,0 +1,39 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Raw to Bronze",
+    "States": {
+      "Raw to Bronze": {
+        "Type": "Map",
+        "ItemProcessor": {
+          "ProcessorConfig": {
+            "Mode": "DISTRIBUTED",
+            "ExecutionType": "STANDARD"
+          },
+          "StartAt": "Glue StartJobRun",
+          "States": {
+            "Glue StartJobRun": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "spark-job-executor",
+                "Arguments": {
+                  "--CONFIG_FILE.$": "States.Format('s3://terraform-standard-datalake-etl-code-bucket/{}',$.Key)"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        "MaxConcurrency": 1000,
+        "Label": "RawtoBronze",
+        "End": true,
+        "ItemReader": {
+          "Resource": "arn:aws:states:::s3:listObjectsV2",
+          "Parameters": {
+            "Bucket": "terraform-standard-datalake-etl-code-bucket",
+            "Prefix": "code/config/1_raw_to_bronze/"
+          }
+        }
+      }
+    }
+  }
